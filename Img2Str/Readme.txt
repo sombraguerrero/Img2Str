@@ -1,0 +1,1 @@
+﻿Note: Use file extension webt for the base64 string text file of a webp image.
