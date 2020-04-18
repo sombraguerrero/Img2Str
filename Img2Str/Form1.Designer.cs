@@ -72,7 +72,6 @@
             // 
             // saveFileDialog1
             // 
-            this.saveFileDialog1.AddExtension = false;
             this.saveFileDialog1.Title = "Output Text File";
             // 
             // Form1

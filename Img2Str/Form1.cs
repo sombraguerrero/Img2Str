@@ -65,6 +65,8 @@ namespace Img2Str
             {
                 case 1:
                     saveFileDialog1.Title = "Output Text File";
+                    saveFileDialog1.DefaultExt = "txt";
+                    saveFileDialog1.Filter = @"Base64 text file|*.txt";
                     if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                     {
                         using (StreamWriter sw = new StreamWriter(saveFileDialog1.FileName))
@@ -80,6 +82,8 @@ namespace Img2Str
                         MemoryStream memoryStream = new MemoryStream(Convert.FromBase64String(File.ReadAllText(textBox1.Text)));
                         Bitmap bitmap = new Bitmap(memoryStream);
                         saveFileDialog1.Title = "Output Image File";
+                        saveFileDialog1.DefaultExt = "webp";
+                        saveFileDialog1.Filter = @"Webp image file|*.webp";
                         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                         {
                             using (FileStream fs = File.Create(saveFileDialog1.FileName))
@@ -98,6 +102,8 @@ namespace Img2Str
                     break;
                 case 3:
                     saveFileDialog1.Title = "Output Text File";
+                    saveFileDialog1.DefaultExt = "webt";
+                    saveFileDialog1.Filter = @"Webp Base64 text file|*.webt";
                     if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                     {
                         using (StreamWriter sw = new StreamWriter(saveFileDialog1.FileName))
@@ -115,6 +121,8 @@ namespace Img2Str
                         byte[] imageData = Convert.FromBase64String(File.ReadAllText(textBox1.Text));
                         SimpleDecoder simpleDecoder = new SimpleDecoder();
                         saveFileDialog1.Title = "Output Image File";
+                        saveFileDialog1.DefaultExt = "bmp";
+                        saveFileDialog1.Filter = @"Bitmap image file|*.bmp";
                         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                         {
                             Bitmap bitmap = simpleDecoder.DecodeFromBytes(imageData, imageData.Length);
