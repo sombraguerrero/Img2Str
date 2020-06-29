@@ -8,6 +8,7 @@ namespace Img2Str
     public partial class Form1 : Form
     {
         public Form1() => InitializeComponent();
+        public  enum FileTypes { TxtSrc = 2, WebP = 3, WebP_Text = 4, General = 1 }
 
         private void Button1_Click(object sender, EventArgs e)
         {
@@ -29,23 +30,23 @@ namespace Img2Str
                 e.Effect = DragDropEffects.Copy;
         }
 
-        private int branchConvert()
+        private FileTypes branchConvert()
         {
             FileInfo fileInfo = new FileInfo(textBox1.Text);
-            int mode;
+            FileTypes mode;
             switch (fileInfo.Extension.ToUpper())
             {
                 case ".TXT":
-                    mode = 2;
+                    mode = FileTypes.TxtSrc;
                     break;
                 case ".WEBP":
-                    mode = 3;
+                    mode = FileTypes.WebP;
                     break;
                 case ".WEBT":
-                    mode = 4;
+                    mode = FileTypes.WebP_Text;
                     break;
                 default:
-                    mode = 1;
+                    mode = FileTypes.General;
                     break;
             }
             button2.Enabled = true;
@@ -63,7 +64,7 @@ namespace Img2Str
         {
             switch (branchConvert())
             {
-                case 1:
+                case FileTypes.General:
                     saveFileDialog1.Title = "Output Text File";
                     saveFileDialog1.DefaultExt = "txt";
                     saveFileDialog1.Filter = @"Base64 text file|*.txt";
@@ -76,7 +77,7 @@ namespace Img2Str
                         MessageBox.Show("Written to " + textBox1.Text, "Complete");
                     }
                     break;
-                case 2:
+                case FileTypes.TxtSrc:
                     try
                     {
                         MemoryStream memoryStream = new MemoryStream(Convert.FromBase64String(File.ReadAllText(textBox1.Text)));
@@ -100,7 +101,7 @@ namespace Img2Str
                         MessageBox.Show(f.Message, "Invalid input file.");
                     }
                     break;
-                case 3:
+                case FileTypes.WebP:
                     saveFileDialog1.Title = "Output Text File";
                     saveFileDialog1.DefaultExt = "webt";
                     saveFileDialog1.Filter = @"Webp Base64 text file|*.webt";
@@ -115,19 +116,23 @@ namespace Img2Str
                         MessageBox.Show("Written to " + saveFileDialog1.FileName, "Complete");
                     }
                     break;
-                case 4:
+                case FileTypes.WebP_Text:
                     try
                     {
                         byte[] imageData = Convert.FromBase64String(File.ReadAllText(textBox1.Text));
                         SimpleDecoder simpleDecoder = new SimpleDecoder();
                         saveFileDialog1.Title = "Output Image File";
-                        saveFileDialog1.DefaultExt = "bmp";
-                        saveFileDialog1.Filter = @"Bitmap image file|*.bmp";
+                        saveFileDialog1.DefaultExt = "webp";
+                        saveFileDialog1.Filter = @"WebP image file|*.webp";
                         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                         {
                             Bitmap bitmap = simpleDecoder.DecodeFromBytes(imageData, imageData.Length);
-                            bitmap.Save(saveFileDialog1.FileName);
-                            MessageBox.Show("Written to " + saveFileDialog1.FileName, "Complete");
+                            using (FileStream fs = File.Create(saveFileDialog1.FileName))
+                            {
+                                SimpleEncoder simpleEncoder = new SimpleEncoder();
+                                simpleEncoder.Encode(bitmap, fs, 85);
+                            }
+                            MessageBox.Show("Saved to " + saveFileDialog1.FileName);
                         }
                     }
                     catch (FormatException f)
