@@ -74,7 +74,7 @@ namespace Img2Str
                         {
                             sw.Write(Convert.ToBase64String(File.ReadAllBytes(textBox1.Text)));
                         }
-                        MessageBox.Show("Written to " + textBox1.Text, "Complete");
+                        MessageBox.Show("Written to " + saveFileDialog1.FileName, "Complete");
                     }
                     break;
                 case FileTypes.TxtSrc:
