@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 using Imazen.WebP;
@@ -60,7 +62,7 @@ namespace Img2Str
             button2.Enabled = true;
             
         }
-        private void Str2Img()
+        private async void Str2Img() //method must be asynchronous so we can properly await the Discord post and not block the UI thread (hangs otherwise)
         {
             switch (branchConvert())
             {
@@ -93,8 +95,17 @@ namespace Img2Str
                                 simpleEncoder.Encode(bitmap, fs, 85);
                             }
                             MessageBox.Show("Saved to " + saveFileDialog1.FileName);
+                            memoryStream.Close();
+                            if (MessageBox.Show("Do you want to post to Discord?", "#lis-media", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                            {
+                                Task<string> postArt = PostImage();
+                                await postArt; // must await the task so as not to block the UI thread and cause hanging
+                                using (StreamWriter sw = new StreamWriter("fanart_response.json"))
+                                {
+                                    sw.Write(postArt.Result);
+                                }
+                            }
                         }
-                        memoryStream.Close();
                     }
                     catch (FormatException f)
                     {
@@ -140,6 +151,27 @@ namespace Img2Str
                         MessageBox.Show(f.Message, "Invalid input file.");
                     }
                     break;
+            }
+        }
+
+        private async Task<string> PostImage()
+        {
+            HttpClient httpClient = new HttpClient();
+            string shortname = saveFileDialog1.FileName.Substring(saveFileDialog1.FileName.LastIndexOf('\\') + 1);
+            MultipartFormDataContent form = new MultipartFormDataContent
+            {
+                { new StringContent("Decoded fanart: " + shortname), "content" },
+                { new ByteArrayContent(File.ReadAllBytes(saveFileDialog1.FileName)), "file", shortname }
+            };
+            HttpResponseMessage response = await httpClient.PostAsync($"https://discordapp.com/api/webhooks/768447672758566919/{Environment.GetEnvironmentVariable("wolfbros_token", EnvironmentVariableTarget.User)}", form);
+            httpClient.Dispose();
+            try
+            {
+                return (await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync());
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"{ex.Message}{Environment.NewLine}From: {ex.Source}";
             }
         }
     }
